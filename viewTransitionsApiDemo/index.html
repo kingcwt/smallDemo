@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>View Transition Example</title>
+    <style>
+      .dark {
+        background-color: black;
+      }
+      .light {
+        background-color: white;
+      }
+
+      #expandBtn {
+        position: fixed;
+        bottom: 10%;
+        right: 10%;
+        /* transform: translate(-50%, -50%); */
+        clip-path: "circle(0px at 2957px 663px)",
+          "circle(3030.4154830649873px at 2957px 663px)";
+      }
+
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation: none;
+        mix-blend-mode: normal;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="expandBtn">点击扩展颜色</button>
+
+    <script>
+      const root = document.documentElement;
+      const btn = document.getElementById("expandBtn");
+      const background = document.getElementById("background");
+
+      const toggleAnimationTheme = (event, isDark) => {
+        const x = event.clientX;
+        const y = event.clientY;
+
+        const endRadius = Math.hypot(
+          Math.max(x, innerWidth - x),
+          Math.max(y, innerHeight - y)
+        );
+
+        document
+          .startViewTransition(async () => {
+            root.classList.remove(isDark ? "dark" : "light");
+            root.classList.add(isDark ? "light" : "dark");
+          })
+          .ready.then(() => {
+            const cir = [
+              `circle(0px at ${x}px ${y}px)`,
+              `circle(${endRadius}px at ${x}px ${y}px)`,
+            ];
+
+            const clipPath = isDark ? cir.reverse() : cir;
+            root.animate(
+              {
+                clipPath: clipPath,
+              },
+              {
+                duration: 1500,
+                easing: "ease-in",
+                pseudoElement: "::view-transition-new(root)",
+              }
+            );
+          });
+      };
+
+      let isDark = false;
+
+      btn.addEventListener("click", function (ev) {
+        root.classList.contains("dark") ? (isDark = true) : (isDark = false);
+        toggleAnimationTheme(ev, isDark);
+      });
+    </script>
+  </body>
+</html>
